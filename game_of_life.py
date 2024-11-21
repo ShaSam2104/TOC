@@ -157,9 +157,10 @@ class GameOfLife:
             for h in heightRange:
                 if w == 0 and h == 0:
                     continue
-                neighbours.append(self.automata[y+h][x+w])
-
-        return neighbours
+            # Wrap around both horizontally and vertically
+            neighbour_x = (x + w) ##% self.width
+            neighbour_y = (y + h) ##% self.height
+            neighbours.append(self.automata[neighbour_y][neighbour_x])
         return [n for n in neighbours if random.random() <= self.beta]
 
     def updateAutomata(self) -> None:
@@ -221,7 +222,9 @@ if __name__ == "__main__":
             "RULE": "B3/S2,3",
             "DENSITY": 0.5,
             "ALPHA": 1,
-            "BETA": 1
+            "BETA": 1,
+            "HORIZONTAL_SPLIT": 0,
+            "VERTICAL_SPLIT": 0,
         }
 
     parser.add_argument("-D", "--defaults", action="store_true")
@@ -236,7 +239,8 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--alpha", default=DEFAULTS["ALPHA"], type=float)
     parser.add_argument("-b", "--beta", default=DEFAULTS["BETA"], type=float)
     parser.add_argument("-g", "--gamma", action="store_true")
-
+    parser.add_argument("-hsp", "--horizontal-split", default=DEFAULTS["HORIZONTAL_SPLIT"], type=int)
+    parser.add_argument("-vsp", "--vertical-split",default=DEFAULTS["VERTICAL_SPLIT"],type=int)
     parser.add_argument("-S", "--save", action="store_true")
 
     args = parser.parse_args()
