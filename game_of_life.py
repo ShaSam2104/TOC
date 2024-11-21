@@ -32,8 +32,11 @@ class GameOfLife:
         self.height = sizeXY[1]
         self.timeStamps = timeStamps
         self.looping_boundary = looping_boundary
-        if not self.validateRule(rule):
+        rule_tuple = self.validateRule(rule)
+        if not rule_tuple:
             raise Exception("Invalid Rule.\nRule should be of format Bl,m,n,.../Sl,n,m\nExample: B3/S2,3...")
+
+        self.rule, self.birth, self.survival = rule_tuple
 
         self.alpha = alpha
         self.beta = beta
@@ -44,6 +47,32 @@ class GameOfLife:
 
         else:
             self.automata = self.genInitConfig(density)
+
+        self.rulesDict = {
+                
+                ## traditional life game
+                "life": "B3/S2,3",
+                
+                ## low-density life-like games
+                "flock_life": "B3/S1,2",
+                "honey_life": "B3,8/S2,3,8",
+                "2x2_life": "B3,6/S1,2,5",
+                "eight_life": "B3/S2,3,8",
+                "high_life": "B3,6/S2,3",
+                "pedestrian_life": "B3,8/S2,3",
+                "lowdeath_life": "B3,6,8/S2,3,8",
+                
+                ## high-density life-like games
+                "dry_life": "B3,7/S2,3",
+                "drigh_life": "B3,6,7/S2,3",
+                "B356/S23": "B3,5,6/S2,3",
+                "B356/S238": "B3,5,6/S2,3,8",
+                "B3568/S23": "B3,5,6,8/S2,3",
+                "B3568/S238": "B3,5,6,8/S2,3,8",
+                "B3578/S23": "B3,5,7,8/S2,3",
+                "B3578/S237": "B3,5,7,8/S2,3,7",
+                "B3578/S238": "B3,5,7,8/S2,3,8"
+            }
 
     def readInitConfig(self, initConfig: str) -> list[list[int]]:
         
@@ -94,33 +123,7 @@ class GameOfLife:
 
         return arr.tolist()
 
-    def validateRule(self, rule: str) -> bool:
-
-        self.rulesDict = {
-                
-                ## traditional life game
-                "life": "B3/S2,3",
-                
-                ## low-density life-like games
-                "flock_life": "B3/S1,2",
-                "honey_life": "B3,8/S2,3,8",
-                "2x2_life": "B3,6/S1,2,5",
-                "eight_life": "B3/S2,3,8",
-                "high_life": "B3,6/S2,3",
-                "pedestrian_life": "B3,8/S2,3",
-                "lowdeath_life": "B3,6,8/S2,3,8",
-                
-                ## high-density life-like games
-                "dry_life": "B3,7/S2,3",
-                "drigh_life": "B3,6,7/S2,3",
-                "B356/S23": "B3,5,6/S2,3",
-                "B356/S238": "B3,5,6/S2,3,8",
-                "B3568/S23": "B3,5,6,8/S2,3",
-                "B3568/S238": "B3,5,6,8/S2,3,8",
-                "B3578/S23": "B3,5,7,8/S2,3",
-                "B3578/S237": "B3,5,7,8/S2,3,7",
-                "B3578/S238": "B3,5,7,8/S2,3,8"
-            }
+    def validateRule(self, rule: str) -> tuple[str, list[int], list[int]] | None:
 
         try:
             birth, survival = rule.split("/")
@@ -131,18 +134,16 @@ class GameOfLife:
             birth = [int(x) for x in birth]
             survival = [int(x) for x in survival]
 
-            self.rule = rule
-            self.birth = birth
-            self.survival = survival
-            return True
+            return rule, birth, survival
 
         except:
-            return False
+            return None
 
     def getNeighbours(self, x: int, y: int) -> list[int]:
         
         neighbours = []
         widthRange, heightRange = [-1, 0, 1], [-1, 0, 1]
+
         if not self.looping_boundary:
             if x == 0:
                 widthRange.remove(-1)
