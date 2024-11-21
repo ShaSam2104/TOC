@@ -31,6 +31,7 @@ class GameOfLife:
         self.width = sizeXY[0]
         self.height = sizeXY[1]
         self.timeStamps = timeStamps
+        self.looping_boundary = looping_boundary
         if not self.validateRule(rule):
             raise Exception("Invalid Rule.\nRule should be of format Bl,m,n,.../Sl,n,m\nExample: B3/S2,3...")
 
@@ -142,25 +143,25 @@ class GameOfLife:
         
         neighbours = []
         widthRange, heightRange = [-1, 0, 1], [-1, 0, 1]
-        
-        if x == 0:
-            widthRange.remove(-1)
-        if x == self.width - 1:
-            widthRange.remove(1)
+        if not self.looping_boundary:
+            if x == 0:
+                widthRange.remove(-1)
+            if x == self.width - 1:
+                widthRange.remove(1)
 
-        if y == 0:
-            heightRange.remove(-1)
-        if y == self.height - 1:
-            heightRange.remove(1)
+            if y == 0:
+                heightRange.remove(-1)
+            if y == self.height - 1:
+                heightRange.remove(1)
 
         for w in widthRange:
             for h in heightRange:
                 if w == 0 and h == 0:
                     continue
-            # Wrap around both horizontally and vertically
-            neighbour_x = (x + w) ##% self.width
-            neighbour_y = (y + h) ##% self.height
-            neighbours.append(self.automata[neighbour_y][neighbour_x])
+                # Wrap around both horizontally and vertically
+                neighbour_x = (x + w) % self.width
+                neighbour_y = (y + h) % self.height
+                neighbours.append(self.automata[neighbour_y][neighbour_x])
         return [n for n in neighbours if random.random() <= self.beta]
 
     def updateAutomata(self) -> None:
