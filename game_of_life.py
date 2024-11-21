@@ -18,7 +18,10 @@ class GameOfLife:
             density: float,
             alpha: float,           ## what fraction of the population gets updated
             beta: float,            ## what random fraction of the neighbours should affect the cell
-            gamma: bool             ## random rules or not
+            gamma: bool,             ## random rules or not
+            hsp: int,
+            vsp: int
+            
         ) -> None:
         
         if not isinstance(sizeXY, abc.Iterable):
@@ -32,6 +35,8 @@ class GameOfLife:
         self.height = sizeXY[1]
         self.timeStamps = timeStamps
         self.looping_boundary = looping_boundary
+        self.hsp = hsp
+        self.vsp = vsp
         rule_tuple = self.validateRule(rule)
         if not rule_tuple:
             raise Exception("Invalid Rule.\nRule should be of format Bl,m,n,.../Sl,n,m\nExample: B3/S2,3...")
@@ -47,6 +52,8 @@ class GameOfLife:
 
         else:
             self.automata = self.genInitConfig(density)
+        horizontal = self.horizontal_split()
+        vertical = self.vertical_split()
 
         self.rulesDict = {
                 
@@ -122,7 +129,23 @@ class GameOfLife:
         arr = np.array(arr).reshape((self.height, self.width))
 
         return arr.tolist()
+    
+    def horizontal_split(self) -> list[tuple[int, int]]:
 
+        if self.hsp == 0:
+            return [(0, self.height)]
+
+        split = self.height // self.hsp
+        return [(i * split, (i + 1) * split-1) for i in range(self.hsp)]
+    
+    def vertical_split(self) -> list[tuple[int, int]]:
+
+        if self.vsp == 0:
+            return [(0, self.width)]
+
+        split = self.width // self.vsp
+        return [(i * split, (i + 1) * split-1) for i in range(self.vsp)]
+    
     def validateRule(self, rule: str) -> tuple[str, list[int], list[int]] | None:
 
         try:
@@ -259,5 +282,5 @@ if __name__ == "__main__":
     conway = GameOfLife((args.width, args.height),
                         args.timestamps, args.initconfig, args.rule,
                         args.looping_boundary, args.density,
-                        args.alpha, args.beta, args.gamma)
+                        args.alpha, args.beta, args.gamma, args.horizontal_split, args.vertical_split)
     conway.simulate(save=args.save)
