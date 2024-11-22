@@ -242,7 +242,7 @@ class GameOfLife:
         
         ani = animation.ArtistAnimation(fig, frames, interval=800, blit=True)
         if save:
-            ani.save(f"GameOfLife.mp4")
+            ani.save(f"outputs/GameOfLife_{self.alpha}_{self.beta}_{self.vsp}_{self.hsp}_looping-{self.looping_boundary}.mp4")
         plt.show()
 
     def getSectionWiseRule(self, x: int, y: int) -> str:
