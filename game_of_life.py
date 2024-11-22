@@ -245,9 +245,12 @@ class GameOfLife:
 
             frames.append([plt.imshow(self.imgs[i], animated=True)])
         
-        ani = animation.ArtistAnimation(fig, frames, interval=300, blit=True)
+        ani = animation.ArtistAnimation(fig, frames, interval=200, blit=True)
         if save:
-            ani.save(f"outputs/GameOfLife_{self.alpha}_{self.beta}_{self.vsp}_{self.hsp}_looping-{self.looping_boundary}.mp4")
+            if self.hsp == 1 and self.vsp == 1:
+                ani.save(f"outputs/GameOfLife_{self.rule.replace('/', '_')}_{self.alpha}_{self.beta}_{self.vsp}_{self.hsp}_looping-{self.looping_boundary}.mp4")
+            else:
+                ani.save(f"outputs/GameOfLife_{self.alpha}_{self.beta}_{self.vsp}_{self.hsp}_looping-{self.looping_boundary}.mp4")
         plt.show()
 
     def getSectionWiseRule(self, x: int, y: int) -> str:
