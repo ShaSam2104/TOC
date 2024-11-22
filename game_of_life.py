@@ -78,6 +78,7 @@ class GameOfLife:
             raise Exception(f"Invalid Rule: {rule_tuple}\nRule should be of format Bl,m,n,.../Sl,n,m\nExample: B3/S2,3...")
         
         self.rule, self.birth, self.survival = rule_tuple
+        print(self.rule)
 
         self.setSectionWiseRule()
 
@@ -148,8 +149,12 @@ class GameOfLife:
                 ruleDict = {}
                 for h0, h1 in self.horizontal:
                     
-                    ruleDict[(h0, h1)] = random.choice(list(self.rulesDict.keys()))
+                    if self.hsp == 1 and self.vsp == 1:
+                        ruleSet = self.rule
+                    else:
+                        ruleSet = random.choice(list(self.rulesDict.keys()))
 
+                    ruleDict[(h0, h1)] = ruleSet
                 finalDict[(w0, w1)] = ruleDict
             self.ruleMatrix = finalDict
             print(self.ruleMatrix)
@@ -240,15 +245,17 @@ class GameOfLife:
 
             frames.append([plt.imshow(self.imgs[i], animated=True)])
         
-        ani = animation.ArtistAnimation(fig, frames, interval=800, blit=True)
+        ani = animation.ArtistAnimation(fig, frames, interval=300, blit=True)
         if save:
             ani.save(f"outputs/GameOfLife_{self.alpha}_{self.beta}_{self.vsp}_{self.hsp}_looping-{self.looping_boundary}.mp4")
         plt.show()
 
     def getSectionWiseRule(self, x: int, y: int) -> str:
 
-        for xBounds in self.ruleMatrix.keys():
+        if self.vsp == 1 and self.hsp == 1:
+            return self.rule
 
+        for xBounds in self.ruleMatrix.keys():
             if x in range(xBounds[0], xBounds[1]):
                 for yBounds in self.ruleMatrix[xBounds].keys():
                     if y in range(yBounds[0], yBounds[1]):
@@ -292,8 +299,8 @@ if __name__ == "__main__":
             "DENSITY": 0.5,
             "ALPHA": 1,
             "BETA": 1,
-            "HORIZONTAL_SPLIT": 0,
-            "VERTICAL_SPLIT": 0,
+            "HORIZONTAL_SPLIT": 1,
+            "VERTICAL_SPLIT": 1,
             "RULE_MATRIX": None
         }
 
