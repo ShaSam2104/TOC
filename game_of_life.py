@@ -1,5 +1,4 @@
 import random
-from types import NotImplementedType
 import numpy as np
 from copy import deepcopy
 from collections import abc
@@ -41,12 +40,6 @@ class GameOfLife:
         self.hsp = hsp
         self.vsp = vsp
 
-        rule_tuple = self.validateRule(rule)
-        if not rule_tuple:
-            raise Exception("Invalid Rule.\nRule should be of format Bl,m,n,.../Sl,n,m\nExample: B3/S2,3...")
-
-        self.rule, self.birth, self.survival = rule_tuple
-
         self.alpha = alpha
         self.beta = beta
         self.ruleMatrix = ruleMatrix
@@ -77,10 +70,15 @@ class GameOfLife:
                 "B3578/S238": "B3,5,7,8/S2,3,8"
             }
 
-        if ruleMatrix == None:
-            self.horizontal = self.horizontal_split()
-            self.vertical = self.vertical_split()
+        self.horizontal = self.horizontal_split()
+        self.vertical = self.vertical_split()
+
+        rule_tuple = self.validateRule(rule)
+        if not rule_tuple:
+            raise Exception(f"Invalid Rule: {rule_tuple}\nRule should be of format Bl,m,n,.../Sl,n,m\nExample: B3/S2,3...")
         
+        self.rule, self.birth, self.survival = rule_tuple
+
         self.setSectionWiseRule()
 
         if initConfig != None:
@@ -140,7 +138,25 @@ class GameOfLife:
 
     def setSectionWiseRule(self) -> None:
 
-        raise NotImplementedError()
+        ## if ruleMatrix is none, set it via horizontal and vertical splits
+        ## else read the file provided and set ruleMatrix accordingly
+        if self.ruleMatrix == None:
+
+            finalDict = {}
+            for w0, w1 in self.vertical:
+
+                ruleDict = {}
+                for h0, h1 in self.horizontal:
+                    
+                    ruleDict[(h0, h1)] = random.choice(list(self.rulesDict.keys()))
+
+                finalDict[(w0, w1)] = ruleDict
+            self.ruleMatrix = finalDict
+            print(self.ruleMatrix)
+
+        else:
+
+            raise NotImplementedError("As of yet, only random rules are supported in splits")
     
     def horizontal_split(self) -> list[tuple[int, int]]:
 
@@ -148,7 +164,7 @@ class GameOfLife:
             return [(0, self.height)]
 
         split = self.height // self.hsp
-        return [(i * split, (i + 1) * split-1) for i in range(self.hsp)]
+        return [(i * split, (i + 1) * split) for i in range(self.hsp)]
     
     def vertical_split(self) -> list[tuple[int, int]]:
 
@@ -156,7 +172,7 @@ class GameOfLife:
             return [(0, self.width)]
 
         split = self.width // self.vsp
-        return [(i * split, (i + 1) * split-1) for i in range(self.vsp)]
+        return [(i * split, (i + 1) * split) for i in range(self.vsp)]
     
     def validateRule(self, rule: str) -> tuple[str, list[int], list[int]] | None:
 
@@ -231,7 +247,12 @@ class GameOfLife:
 
     def getSectionWiseRule(self, x: int, y: int) -> str:
 
-        raise NotImplementedError()
+        for xBounds in self.ruleMatrix.keys():
+
+            if x in range(xBounds[0], xBounds[1]):
+                for yBounds in self.ruleMatrix[xBounds].keys():
+                    if y in range(yBounds[0], yBounds[1]):
+                        return self.ruleMatrix[xBounds][yBounds]
 
     def getNextIter(self, x: int, y: int, rule: str) -> int:
 
@@ -273,6 +294,7 @@ if __name__ == "__main__":
             "BETA": 1,
             "HORIZONTAL_SPLIT": 0,
             "VERTICAL_SPLIT": 0,
+            "RULE_MATRIX": None
         }
 
     parser.add_argument("-D", "--defaults", action="store_true")
@@ -286,9 +308,9 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--density", default=DEFAULTS["DENSITY"], type=float)
     parser.add_argument("-a", "--alpha", default=DEFAULTS["ALPHA"], type=float)
     parser.add_argument("-b", "--beta", default=DEFAULTS["BETA"], type=float)
-    parser.add_argument("-g", "--gamma", action="store_true")
     parser.add_argument("-hsp", "--horizontal-split", default=DEFAULTS["HORIZONTAL_SPLIT"], type=int)
     parser.add_argument("-vsp", "--vertical-split",default=DEFAULTS["VERTICAL_SPLIT"],type=int)
+    parser.add_argument("-rm", "--rule-matrix", default=DEFAULTS["RULE_MATRIX"], type=str)
     parser.add_argument("-S", "--save", action="store_true")
 
     args = parser.parse_args()
@@ -305,5 +327,6 @@ if __name__ == "__main__":
     conway = GameOfLife((args.width, args.height),
                         args.timestamps, args.initconfig, args.rule,
                         args.looping_boundary, args.density,
-                        args.alpha, args.beta, args.gamma, args.horizontal_split, args.vertical_split)
+                        args.alpha, args.beta, args.horizontal_split, args.vertical_split, args.rule_matrix)
+
     conway.simulate(save=args.save)
