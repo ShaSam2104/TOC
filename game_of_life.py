@@ -172,7 +172,7 @@ class GameOfLife:
                     if self.hsp == 1 and self.vsp == 1:
                         ruleSet = self.rule
                     else:
-                        ruleSet = fileContents[i][j]
+                        ruleSet = fileContents[j][i]
 
                     ruleDict[r1] = ruleSet
                 finalDict[r0] = ruleDict
