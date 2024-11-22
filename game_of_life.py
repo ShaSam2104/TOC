@@ -1,4 +1,5 @@
 import random
+from types import NotImplementedType
 import numpy as np
 from copy import deepcopy
 from collections import abc
@@ -18,10 +19,9 @@ class GameOfLife:
             density: float,
             alpha: float,           ## what fraction of the population gets updated
             beta: float,            ## what random fraction of the neighbours should affect the cell
-            gamma: bool,             ## random rules or not
             hsp: int,
-            vsp: int
-            
+            vsp: int,
+            ruleMatrix: str | None
         ) -> None:
         
         if not isinstance(sizeXY, abc.Iterable):
@@ -31,12 +31,16 @@ class GameOfLife:
             raise Exception("Size can only be of length 2")
 
         self.imgs: list[list[list[int]]] = []
+
         self.width = sizeXY[0]
         self.height = sizeXY[1]
+
         self.timeStamps = timeStamps
         self.looping_boundary = looping_boundary
+
         self.hsp = hsp
         self.vsp = vsp
+
         rule_tuple = self.validateRule(rule)
         if not rule_tuple:
             raise Exception("Invalid Rule.\nRule should be of format Bl,m,n,.../Sl,n,m\nExample: B3/S2,3...")
@@ -45,15 +49,7 @@ class GameOfLife:
 
         self.alpha = alpha
         self.beta = beta
-        self.gamma = gamma
-
-        if initConfig != None:
-            self.automata = self.readInitConfig(initConfig)
-
-        else:
-            self.automata = self.genInitConfig(density)
-        horizontal = self.horizontal_split()
-        vertical = self.vertical_split()
+        self.ruleMatrix = ruleMatrix
 
         self.rulesDict = {
                 
@@ -80,6 +76,18 @@ class GameOfLife:
                 "B3578/S237": "B3,5,7,8/S2,3,7",
                 "B3578/S238": "B3,5,7,8/S2,3,8"
             }
+
+        if ruleMatrix == None:
+            self.horizontal = self.horizontal_split()
+            self.vertical = self.vertical_split()
+        
+        self.setSectionWiseRule()
+
+        if initConfig != None:
+            self.automata = self.readInitConfig(initConfig)
+
+        else:
+            self.automata = self.genInitConfig(density)
 
     def readInitConfig(self, initConfig: str) -> list[list[int]]:
         
@@ -129,6 +137,10 @@ class GameOfLife:
         arr = np.array(arr).reshape((self.height, self.width))
 
         return arr.tolist()
+
+    def setSectionWiseRule(self) -> None:
+
+        raise NotImplementedError()
     
     def horizontal_split(self) -> list[tuple[int, int]]:
 
@@ -149,6 +161,11 @@ class GameOfLife:
     def validateRule(self, rule: str) -> tuple[str, list[int], list[int]] | None:
 
         try:
+
+            matchedKnownRule = self.rulesDict.get(rule)
+            if matchedKnownRule != None:
+                rule = matchedKnownRule
+
             birth, survival = rule.split("/")
             
             birth = birth.strip("B").split(",")
@@ -193,8 +210,9 @@ class GameOfLife:
         nextIter = deepcopy(self.automata)
         for w in range(self.width):
             for h in range(self.height):
+                rule = self.getSectionWiseRule(w, h)
                 if random.random() <= self.alpha:
-                    nextIter[h][w] = self.getNextIter(w, h)
+                    nextIter[h][w] = self.getNextIter(w, h, rule)
 
         self.automata = nextIter
     
@@ -211,18 +229,23 @@ class GameOfLife:
             ani.save(f"GameOfLife.mp4")
         plt.show()
 
-    def getNextIter(self, x: int, y: int) -> int:
+    def getSectionWiseRule(self, x: int, y: int) -> str:
+
+        raise NotImplementedError()
+
+    def getNextIter(self, x: int, y: int, rule: str) -> int:
 
         aliveNeighbours = sum(self.getNeighbours(x, y))
+        _, birth, survival = self.validateRule(rule)
         if self.automata[y][x] == 0:
             ## will be 1 only if exactly three neighbours are alive
-            if aliveNeighbours in self.birth:
+            if aliveNeighbours in birth:
                 return 1
             else:
                 return 0
         else:
             ## will be 1 if 2-3 neighbours are alive
-            if aliveNeighbours in self.survival:
+            if aliveNeighbours in survival:
                 return 1
             else:
                 return 0
