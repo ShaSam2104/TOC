@@ -1,3 +1,4 @@
+from io import TextIOWrapper
 import random
 import numpy as np
 from copy import deepcopy
@@ -160,8 +161,43 @@ class GameOfLife:
             print(self.ruleMatrix)
 
         else:
+            
+            fileContents = self.readRuleMatrix()
+            finalDict = {}
+            for i, r0 in enumerate(self.vertical):
 
-            raise NotImplementedError("As of yet, only random rules are supported in splits")
+                ruleDict = {}
+                for j, r1 in enumerate(self.horizontal):
+                    
+                    if self.hsp == 1 and self.vsp == 1:
+                        ruleSet = self.rule
+                    else:
+                        ruleSet = fileContents[i][j]
+
+                    ruleDict[r1] = ruleSet
+                finalDict[r0] = ruleDict
+            self.ruleMatrix = finalDict
+            print(self.ruleMatrix)
+
+    def readRuleMatrix(self) -> list[list[str]]:
+
+        try:
+            fp: TextIOWrapper = open(self.ruleMatrix, "r")
+            
+            grid = fp.readlines()
+            grid = [row.strip("\n") for row in grid]
+
+            configs = []
+            for row in grid:
+                eles = row.split(",")
+                eles = [rule.strip() for rule in eles]
+                configs.append(eles)
+
+            fp.close()
+            return configs
+
+        except FileNotFoundError:
+            raise Exception("Could not find the initConfig file")
     
     def horizontal_split(self) -> list[tuple[int, int]]:
 
