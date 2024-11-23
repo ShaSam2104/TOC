@@ -1,0 +1,42 @@
+Aarya Parekh - AU2120075
+Samya Shah - AU2140232
+Kavyan Savani - AU2120231
+Diya Patel - AU2120193
+put the lines below rules.csv inside rules.csv file
+Pattern-1
+python3 game_of_life.py -W 100 -H 100 -i four_parts_100x100.csv  -S  -t 100 -vsp 4 -rm rules.csv
+rules.csv:
+dry_life,eight_life,B3568/S23,B356/S23
+
+
+Pattern-2
+python3 game_of_life.py -W 100 -H 100 -i symmetric_pattern_1_100x100.csv -t 50 -S -a 0.5
+rules.csv:
+B3/S2,3
+
+
+Pattern-3
+python3 game_of_life.py -W 100 -H 100 -i flower_shape_100x100.csv -t 50 -hsp 4 -vsp 4 -S -a 0.1 -rm rules.csv
+rules.csv:
+life,2x2_life
+B3568/S23,honey_life
+
+
+Pattern-4
+python3 game_of_life.py -W 100 -H 100 -i diag_square_small.csv  -S  -t 100 -hsp 2 -rm rules.csv
+rules.csv:
+dry_life
+life
+
+
+Pattern-5
+python3 game_of_life.py -W 100 -H 100 -i diag_square_big.csv  -t 100 -hsp 2 -rm something.csv -o  
+rules.csv:
+B3568/S238
+honey_life
+
+Pattern-6
+python3 game_of_life.py -W 100 -H 100 -i diag_square_big.csv  -t 300 -hsp 2 -rm something.csv -a 0.1 -S
+rules.csv
+B3568/S238
+honey_life 
